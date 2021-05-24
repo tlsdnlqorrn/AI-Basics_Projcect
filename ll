@@ -152,7 +152,6 @@ def detect_and_predict_mask(frame, faceNet, maskNet):
 if __name__ == "__main__":
     app = QApplication(sys.argv)  # application 객체 생성
     app.setWindowIcon(QIcon('samples/icon.png'))  # 위젯창 아이콘 설정
-    
     buttons = []
     for i in range(0, 100, 1):
         path = os.path.sep.join(["set_up", "filter", str(i)])
