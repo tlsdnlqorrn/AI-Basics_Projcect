@@ -162,53 +162,42 @@ if __name__ == "__main__":
             break
     
     BeautyButton.start_widget()
-    
     face_cascade = cv2.CascadeClassifier('set_up/haarcascade_frontalface_default.xml')
     
     face_roi = []
     face_sizes = []
     
-    # load our serialized face detector model from disk
     print("[INFO] loading face detector model...")
     prototxtPath = os.path.sep.join(["set_up", "face_detector", "deploy.prototxt"])
     weightsPath = os.path.sep.join(["set_up", "face_detector", "res10_300x300_ssd_iter_140000.caffemodel"])
     faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
 
-    # load the face mask detector model from disk
     print("[INFO] loading face mask detector model...")
     maskNet = load_model(os.path.sep.join(["set_up", "mask_detector.model"]))
 
-    # initialize the video stream and allow the camera sensor to warm up
     print("[INFO] starting video stream...")
     vs = VideoStream(src=0).start()
     time.sleep(2.0)
     
-    # 실시간 비디오의 각 프레임마다 처리하는 부분입니다.
     while True:
-        # 프레임을 받아오고 프레임 별 얼굴을 인식해 faces리스트에 담는 부분입니다.
         frame = vs.read()
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = face_cascade.detectMultiScale(gray, 1.1, 4)
         frame = imutils.resize(frame, width=400)
         
-        # 얼굴들이 마스크를 쓴 상태인지 확인하는 함수를 호출합니다.
         (locs, preds) = detect_and_predict_mask(frame, faceNet, maskNet)
         
-        # 각 얼굴 별로 마스크 확률 및 위치를 이용해 적절한 이미지를 붙이는 부분입니다.
         for (box, pred) in zip(locs, preds):
             (startX, startY, endX, endY) = box
             (mask, withoutMask) = pred
             
             isMask = mask > withoutMask
-            
-            
-            # 얼굴에 넣을 필터의 생김새와 크기를 설정하는 부분입니다.
+           
             overlay = overlay_mask if isMask else overlay_nonMask      
             
             filter_size = int((endX-startX)* filter_scale)
             frame = overlay_transparent(frame, overlay, (startX+endX)/2, (startY+endY)/2, overlay_size=(filter_size, filter_size))
             
-            # 테스트모드인 경우 마스크 착용 확률을 포함하는 테스트용 레이아웃을 추가로 출력합니다.
             if test_mode:
                 prob = max(mask, withoutMask)
                 label = "Mask" if isMask else "No Mask"
