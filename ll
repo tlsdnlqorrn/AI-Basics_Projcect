@@ -163,7 +163,6 @@ if __name__ == "__main__":
     
     BeautyButton.start_widget()
     face_cascade = cv2.CascadeClassifier('set_up/haarcascade_frontalface_default.xml')
-    
     face_roi = []
     face_sizes = []
     
@@ -171,10 +170,8 @@ if __name__ == "__main__":
     prototxtPath = os.path.sep.join(["set_up", "face_detector", "deploy.prototxt"])
     weightsPath = os.path.sep.join(["set_up", "face_detector", "res10_300x300_ssd_iter_140000.caffemodel"])
     faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
-
     print("[INFO] loading face mask detector model...")
     maskNet = load_model(os.path.sep.join(["set_up", "mask_detector.model"]))
-
     print("[INFO] starting video stream...")
     vs = VideoStream(src=0).start()
     time.sleep(2.0)
@@ -190,11 +187,9 @@ if __name__ == "__main__":
         for (box, pred) in zip(locs, preds):
             (startX, startY, endX, endY) = box
             (mask, withoutMask) = pred
-            
-            isMask = mask > withoutMask
            
+            isMask = mask > withoutMask
             overlay = overlay_mask if isMask else overlay_nonMask      
-            
             filter_size = int((endX-startX)* filter_scale)
             frame = overlay_transparent(frame, overlay, (startX+endX)/2, (startY+endY)/2, overlay_size=(filter_size, filter_size))
             
@@ -203,11 +198,9 @@ if __name__ == "__main__":
                 label = "Mask" if isMask else "No Mask"
                 label = "{}: {:.2f}%".format(label, prob * 100)
                 color = (0, 255, 0) if isMask else (0, 0, 255)
-                
                 cv2.putText(frame, label, (startX, startY - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
                 cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
 
-        # 결과 화면을 창에 띄웁니다.
         cv2.imshow("Frame", frame)
         key = cv2.waitKey(1) & 0xFF
 
